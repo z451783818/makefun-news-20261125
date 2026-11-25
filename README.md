@@ -1,6 +1,10 @@
 # Sum up 25 November's world news in one image
 
-Entry for https://make.fun/bounty/news-image-20261125
+[![make.fun](https://make.fun/badge/news-image-20261125.svg)](https://make.fun/bounty/news-image-20261125)
+[![Rank](https://make.fun/badge/news-image-20261125/rank.svg)](https://make.fun/bounty/news-image-20261125)
+[![Reward](https://make.fun/badge/news-image-20261125/reward.svg)](https://make.fun/bounty/news-image-20261125)
+
+Entry for [Sum up 25 November's world news in one image](https://make.fun/bounty/news-image-20261125)
 
 - Reward: $100 total, 50 places paid (1st $20, 2nd $12, 3rd $6, 4th-10th $2 each, 11th-50th $1.20 each)
 - Deadline: Fri 2026-11-27 00:00 UTC (08:00 CST)
