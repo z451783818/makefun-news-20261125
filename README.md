@@ -29,12 +29,30 @@ is worded as the 25 Nov rescue.
 
 ```sh
 python3 main.py
-# Wrote /output/entry.png (102565 bytes, sha256 379d48b9e2ab70d834e82e09c09e58658d70c5603ff2d7c03d900827b551e9b5)
+# Wrote /output/entry.png (97598 bytes, sha256 57b0f67a673b10680b6321e3e6c33eb970addfe21766a8fcaeaef1ecc62fa69d)
 ```
 
 Verified locally: two runs write identical bytes (same sha256 above),
 1024x1024, under the 1 MiB limit, no network. Image visually checked:
-no text is clipped.
+no text is clipped, no overlap.
+
+## v2 (2026-11-25)
+
+v1 was submitted and scored a provisional 91.5090% (6W-2D-4L), below
+the 98.7-98.9% top 10. v2 keeps the same five verified stories and
+facts, but is redesigned for the pairwise AI judge, which reads the
+image at a glance with no news feed:
+
+- Bigger header: title 68pt, date line 34pt bold gold, gold rule below.
+- Each story now has a bold accent-coloured stat line with the key
+  fact/number (1ST FOREIGNER ABOARD TIANGONG, ALL FREED,
+  GULF OF FINLAND, TOP US CIVILIAN HONOUR, NIKKEI -2.9%); the lead
+  story's stat is a filled chip.
+- Body text cut to one short line per story, in dark ink instead of
+  grey; more even whitespace inside the grid panels.
+- Simple geometric icon per story (rocket, shield, ship, medal,
+  falling chart) drawn top-right of each panel; thicker accent bars
+  (12px) and panel outlines (4px) for punch at thumbnail scale.
 
 ## Files
 
@@ -50,5 +68,3 @@ make.fun kit (`node cli/makefun.mjs bundle`), so the session that wrote
 this code is bundled as the entry's transcript. The five news stories
 were verified earlier the same day from Reuters, Al Jazeera, Xinhua
 and SCMP and are reused here unchanged.
-
-[![make.fun · news-image-20261125](https://make.fun/badge/news-image-20261125.svg)](https://make.fun/bounty/news-image-20261125?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261125) [![rank](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/rank.svg)](https://make.fun/bounty/news-image-20261125/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261125) [![reward](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/reward.svg)](https://make.fun/bounty/news-image-20261125?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261125)
