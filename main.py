@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Entry for make.fun bounty news-image-20261125.
+"""Entry program: copy the bundled front page to /output/entry.png.
 
-Writes the bundled news image to /output/entry.png.
-Python 3.13, standard library only, no network access.
-Deterministic: the output bytes are identical on every run.
+Python 3.13, standard library only, no network, deterministic.
 """
 
 import hashlib
@@ -12,17 +10,18 @@ import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SOURCE = os.path.join(HERE, "asset.png")
-DEST = "/output/entry.png"
+SRC = os.path.join(HERE, "asset.png")
+OUT_DIR = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+DST = os.path.join(OUT_DIR, "entry.png")
 
 
 def main():
-    os.makedirs(os.path.dirname(DEST), exist_ok=True)
-    shutil.copyfile(SOURCE, DEST)
-    with open(DEST, "rb") as fh:
-        digest = hashlib.sha256(fh.read()).hexdigest()
-    size = os.path.getsize(DEST)
-    print(f"Wrote {DEST} ({size} bytes, sha256 {digest})")
+    os.makedirs(OUT_DIR, exist_ok=True)
+    shutil.copyfile(SRC, DST)
+    with open(DST, "rb") as f:
+        digest = hashlib.sha256(f.read()).hexdigest()
+    size = os.path.getsize(DST)
+    print(f"Wrote {DST} ({size} bytes, sha256 {digest})")
     return 0
 
 
