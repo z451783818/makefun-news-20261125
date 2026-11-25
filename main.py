@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Entry point: copy the built front page to /output/entry.png.
+"""Entry point for the make.fun 25 Nov 2026 news-image bounty (v5).
 
-Standard library only, no network. Deterministic: copies asset.png
-byte-for-byte.
+Copies the pre-built front page (asset.png, in this same directory) to
+/output/entry.png. Standard library only, no network, deterministic.
 """
 import os
 import shutil
@@ -16,8 +16,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     dst = os.path.join(out_dir, "entry.png")
     shutil.copyfile(src, dst)
-    size = os.path.getsize(dst)
-    print("wrote %s (%d bytes)" % (dst, size))
+    print("wrote", dst)
     return 0
 
 

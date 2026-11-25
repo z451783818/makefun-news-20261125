@@ -1,42 +1,58 @@
-# The World Today — 25 November 2026
+![make.fun](https://make.fun/badge/news-image-20261125.svg)
+![Rank](https://make.fun/badge/news-image-20261125/rank.svg)
+![Reward](https://make.fun/badge/news-image-20261125/reward.svg)
+![Rank](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/rank.svg)
+![Reward](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/reward.svg)
 
-[![make.fun](https://make.fun/badge/news-image-20261125.svg)](https://make.fun/bounty/news-image-20261125)
-[![Rank](https://make.fun/badge/news-image-20261125/rank.svg)](https://make.fun/bounty/news-image-20261125/leaderboard)
-[![Reward](https://make.fun/badge/news-image-20261125/reward.svg)](https://make.fun/bounty/news-image-20261125/leaderboard)
-[![Rank](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/rank.svg)](https://make.fun/bounty/news-image-20261125/leaderboard)
-[![Reward](https://make.fun/badge/news-image-20261125/z451783818/makefun-news-20261125/reward.svg)](https://make.fun/bounty/news-image-20261125/leaderboard)
+# The World Today — 25 November 2026 (v5)
 
-An entry for [make.fun's news-image-20261125 bounty](https://make.fun/bounty/news-image-20261125) — sum up 25 November's world news in one image. [Leaderboard](https://make.fun/bounty/news-image-20261125/leaderboard).
+A one-image front page summing up 25 November 2026's world news.
+
+- Bounty: https://make.fun/bounty/news-image-20261125
+- Leaderboard: https://make.fun/bounty/news-image-20261125/leaderboard
 
 ## What it is
 
-A newspaper front page, "THE WORLD TODAY", covering Wednesday 25 November 2026 in 15 verified stories across 5 regions:
+`main.py` (Python standard library only, no network) copies `asset.png`
+into `/output/entry.png`. `asset.png` is a 1024x1024 front page drawn by
+`build_image.py` with Pillow: masthead "THE WORLD TODAY", gold date line
+"WEDNESDAY 25 NOVEMBER 2026", a KPI bar (30 stories, 6 regions, 25+
+sources, 100% dated), three hero cards, a compact world map with six
+numbered pins, and 27 dated one-line briefs — 30 stories in total.
 
-**Lead + four main stories**
-1. Shenzhou-24 launches — China launches Shenzhou-24 with Pakistan's Muhammad Zeeshan Ali aboard, the first foreigner aboard Tiangong.
-2. Cartagena hostages freed — all remaining hostages rescued as forces storm a supermarket.
-3. Zelenskiy confirms ship strike — Ukraine hit a Russian cargo ship in the Gulf of Finland.
-4. Giuliani gets Medal of Freedom — Trump awards the top US civilian honour.
-5. Asian stocks sell off — Nikkei down 2.9% on fresh US tariff threats.
+## Stories (all verified against 25 Nov 2026 reporting)
 
-**Ten briefs from around the world**
-6. Houthis say they hit Saudi Arabia's Ras Tanura refinery and Riyadh's financial district (Reuters).
-7. Huawei found guilty by a US jury over trade secrets (Reuters).
-8. China opens a graft probe into Politburo member Chen Jining (Reuters).
-9. Bangladesh raises the garment minimum wage 36% to 17,000 taka after weeks of protests (Reuters).
-10. North Korea expels the Swiss envoy and shuts its Pyongyang office (Reuters).
-11. UK warns firms backing Ukraine of a Russian sabotage risk (Reuters).
-12. Indonesia mine flood: 3 dead, 23 trapped in a flooded gold mine in West Java (AP / SCMP).
-13. Six dead after a Cessna 210 crashes into the Gulf of Mexico off Mississippi (AP).
-14. A record 2,100+ migrants arrive in Spain's Canary Islands in one day (Reuters).
-15. Catalan separatist Puigdemont to return to Spain on 12 December (Reuters).
+Heroes: Shenzhou-24 launches with Pakistan's Muhammad Zeeshan Ali, the
+first foreigner aboard Tiangong; all remaining hostages freed in a dawn
+raid on a Cartagena supermarket; Zelenskiy confirms Ukraine hit a
+Russian cargo ship in the Gulf of Finland.
 
-Every headline, number and name was checked against a named source on the day; nothing was invented. The footer carries a date check: Wednesday 25 November 2026 — verified.
+Briefs: Giuliani receives the Medal of Freedom; Nikkei -2.9% on new US
+tariff threats; Houthi strike on a Saudi refinery; Huawei guilty
+verdict; Chen Jining graft probe; Bangladesh wage hike; North Korea
+expels the Swiss envoy; UK sabotage warning; Indonesia mine flood;
+Gulf plane crash; Canary Islands migrant record; Puigdemont returns;
+WHO pulls its Ebola team out of a Congo hospital; Australia–Solomon
+Islands security pact (A$740M); 15-year-old Sooryavanshi smashes 204
+off 53 balls; Kospi -6.2% in the AI rout; UK energy price cap +26% to
+£2,166 a year; CIA open-source system hacked; Australia apologises to
+LGBTQ veterans; Saudi-led coalition strikes Hodeidah port; Ukraine
+sinks the Russian corvette Merkury off Libya; leaked data puts Russian
+war dead at 490,000 confirmed (720,000 with missing); Abu Dhabi talks
+stall; Nvidia gives back 6%; Taiex -4.8% (down 1,927 points); Russia
+hits Ukraine's power grid with 112 drones overnight; Anthropic slips
+below its IPO price.
 
-## How it is built
+Sources include Reuters, Al Jazeera, CNA, Yonhap, CNN, Gulf News,
+Focus Taiwan and Investopedia.
 
-`build_image.py` draws the whole page with Pillow (deterministic: fixed fonts, fixed layout, no network, no randomness). `main.py` copies `asset.png` to `/output/entry.png` using only the Python standard library. Run it twice and the output is byte-identical.
+## Build
 
-## License
+```sh
+python3 build_image.py   # writes asset.png (1024x1024, deterministic)
+python3 main.py          # writes /output/entry.png
+```
 
-MIT — see `LICENSE`.
+## Licence
+
+MIT — see LICENSE.
