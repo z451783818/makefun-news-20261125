@@ -1,53 +1,137 @@
-from PIL import Image, ImageDraw, ImageFont
+#!/usr/bin/env python3
+"""Draw the 25 November 2026 world-news summary image (1024x1024 PNG).
+
+Deterministic: same input always produces the same PNG bytes.
+Run: python3 build_image.py  -> writes asset.png next to this script.
+Only Pillow is needed, and only at build time; the entry program
+(main.py) needs nothing but the Python standard library.
+"""
+
 import os
-W=H=1024
-img=Image.new("RGB",(W,H),(245,242,235))
-d=ImageDraw.Draw(img)
-def font(size,bold=False):
-    p="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-    return ImageFont.truetype(p,size)
-def wrap(text,f,maxw,draw):
-    words=text.split(); lines=[]; cur=""
-    for w in words:
-        t=(cur+" "+w).strip()
-        if draw.textlength(t,font=f)<=maxw: cur=t
-        else:
-            if cur: lines.append(cur)
-            cur=w
-    if cur: lines.append(cur)
-    return lines
-# header
-d.rectangle([0,0,W,118],fill=(18,32,62))
-d.text((32,18),"WORLD NEWS",font=font(44,True),fill=(255,255,255))
-d.text((32,72),"TUESDAY 25 NOVEMBER 2026",font=font(26),fill=(255,200,80))
-d.text((W-32,30),"5 STORIES",font=font(28,True),fill=(255,255,255),anchor="ra")
-d.text((W-32,72),"ONE IMAGE",font=font(26),fill=(255,200,80),anchor="ra")
-panels=[
- ("SHENZHOU-24 LAUNCHES","China launches Shenzhou-24 with Pakistan's Muhammad Zeeshan Ali, the first foreigner aboard Tiangong.",(0,90,70)),
- ("CARTAGENA HOSTAGES FREED","All hostages rescued as forces storm a Cartagena supermarket. About 30 were seized on Tuesday.",(178,34,34)),
- ("ZELENSKIY CONFIRMS SHIP STRIKE","Ukraine's president confirms Kyiv hit a Russian cargo ship in the Gulf of Finland.",(20,80,140)),
- ("GIULIANI GETS MEDAL OF FREEDOM","Trump awards the top US civilian honour to Rudy Giuliani.",(120,70,0)),
- ("ASIAN STOCKS SELL OFF","Nikkei falls 2.9% as Asian markets slide on fresh US tariff threats.",(0,110,90)),
+from PIL import Image, ImageDraw, ImageFont
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "asset.png")
+
+W, H = 1024, 1024
+BG = (250, 246, 236)          # warm paper
+HEADER = (18, 28, 66)         # dark navy
+GOLD = (232, 184, 84)
+WHITE = (255, 255, 255)
+INK = (24, 24, 24)
+GREY = (84, 84, 84)
+PANEL = (255, 255, 255)
+
+FONT_DIR = "/usr/share/fonts/truetype/dejavu"
+
+
+def font(name, size):
+    return ImageFont.truetype(os.path.join(FONT_DIR, name), size)
+
+
+F_TITLE = font("DejaVuSans-Bold.ttf", 56)
+F_SUB = font("DejaVuSans-Bold.ttf", 30)
+F_HEADLINE = font("DejaVuSans-Bold.ttf", 34)
+F_HEADLINE_GRID = font("DejaVuSans-Bold.ttf", 29)
+F_BODY = font("DejaVuSans.ttf", 26)
+F_FOOT = font("DejaVuSans.ttf", 22)
+F_NUM = font("DejaVuSans-Bold.ttf", 30)
+
+# (number, accent colour, headline lines, body) for the five stories.
+STORIES = [
+    (1, (0, 110, 70), ["SHENZHOU-24 LAUNCHES"],
+     "China launches Shenzhou-24 with Pakistan's Muhammad "
+     "Zeeshan Ali, the first foreigner aboard Tiangong."),
+    (2, (178, 44, 44), ["CARTAGENA HOSTAGES", "FREED"],
+     "All hostages freed as forces storm a Cartagena supermarket."),
+    (3, (20, 80, 150), ["ZELENSKIY CONFIRMS", "SHIP STRIKE"],
+     "Ukraine's president confirms Kyiv hit a Russian cargo "
+     "ship in the Gulf of Finland."),
+    (4, (140, 90, 10), ["GIULIANI GETS MEDAL", "OF FREEDOM"],
+     "Trump awards the top US civilian honour to Rudy Giuliani."),
+    (5, (0, 110, 70), ["ASIAN STOCKS", "SELL OFF"],
+     "Nikkei falls 2.9% as Asian markets slide on fresh US "
+     "tariff threats."),
 ]
-# layout: panel0 full width, then 2x2
-boxes=[(24,140,1000,320),(24,344,488,620),(536,344,1000,620),(24,644,488,956),(536,644,1000,956)]
-for (title,body,color),(x0,y0,x1,y1) in zip(panels,boxes):
-    d.rounded_rectangle([x0,y0,x1,y1],radius=18,fill=(255,255,255),outline=color,width=4)
-    d.rectangle([x0,y0,x1,y0+8],fill=color)
-    # simple icon: coloured circle with number
-    idx=panels.index((title,body,color))+1
-    d.ellipse([x0+18,y0+24,x0+66,y0+72],fill=color)
-    d.text((x0+42,y0+28),str(idx),font=font(30,True),fill=(255,255,255),anchor="ma")
-    # title
-    tf=font(30,True) if (x1-x0)>400 else font(26,True)
-    lines=wrap(title,tf,x1-x0-36,d)
-    y=y0+84
-    for ln in lines:
-        d.text((x0+18,y),ln,font=tf,fill=(20,20,20)); y+=36
-    bf=font(22)
-    for ln in wrap(body,bf,x1-x0-36,d):
-        d.text((x0+18,y),ln,font=bf,fill=(60,60,60)); y+=30
-d.text((32,988),"Sources: Reuters / Al Jazeera / Xinhua / SCMP, 25 Nov 2026",font=font(18),fill=(100,100,100))
-out=os.path.expanduser("~/workspace/makefun-news-20261125/asset.png")
-img.save(out,format="PNG",optimize=True)
-print(out, os.path.getsize(out))
+
+
+def wrap(draw, text, fnt, max_w):
+    """Greedy word wrap returning a list of lines that fit max_w."""
+    lines, cur = [], ""
+    for word in text.split():
+        trial = (cur + " " + word).strip()
+        if draw.textlength(trial, font=fnt) <= max_w:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def rounded(draw, box, radius, fill, outline, width):
+    draw.rounded_rectangle(box, radius=radius, fill=fill,
+                           outline=outline, width=width)
+
+
+def draw_panel(draw, box, number, accent, headline, body, headline_font=None):
+    x0, y0, x1, y1 = box
+    hf = headline_font or F_HEADLINE
+    rounded(draw, box, 18, PANEL, accent, 3)
+    # accent bar across the top of the panel
+    draw.rectangle([x0 + 4, y0 + 4, x1 - 4, y0 + 12], fill=accent)
+    # numbered disc
+    cx, cy, r = x0 + 46, y0 + 56, 26
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=accent)
+    num = str(number)
+    tw = draw.textlength(num, font=F_NUM)
+    draw.text((cx - tw / 2, cy - 21), num, font=F_NUM, fill=WHITE)
+    # headline
+    y = y0 + 96
+    for line in headline:
+        draw.text((x0 + 24, y), line, font=hf, fill=INK)
+        y += 40
+    y += 6
+    # body, wrapped to the panel width
+    for line in wrap(draw, body, F_BODY, x1 - x0 - 48):
+        draw.text((x0 + 24, y), line, font=F_BODY, fill=GREY)
+        y += 34
+
+
+def main():
+    img = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(img)
+
+    # ---- header ----
+    draw.rectangle([0, 0, W, 118], fill=HEADER)
+    draw.text((28, 14), "WORLD NEWS", font=F_TITLE, fill=WHITE)
+    draw.text((28, 74), "TUESDAY 25 NOVEMBER 2026", font=F_SUB, fill=GOLD)
+    right = "5 STORIES"
+    draw.text((W - 28 - draw.textlength(right, font=F_SUB), 22),
+              right, font=F_SUB, fill=WHITE)
+    right2 = "ONE IMAGE"
+    draw.text((W - 28 - draw.textlength(right2, font=F_SUB), 60),
+              right2, font=F_SUB, fill=GOLD)
+
+    # ---- story 1, full width ----
+    n, accent, head, body = STORIES[0]
+    draw_panel(draw, (24, 140, 1000, 360), n, accent, head, body)
+
+    # ---- stories 2-5, 2x2 grid ----
+    grid = [(24, 380, 492, 670), (532, 380, 1000, 670),
+            (24, 690, 492, 970), (532, 690, 1000, 970)]
+    for (n, accent, head, body), box in zip(STORIES[1:], grid):
+        draw_panel(draw, box, n, accent, head, body,
+                   headline_font=F_HEADLINE_GRID)
+
+    # ---- footer ----
+    draw.text((28, 986), "Sources: Reuters / Al Jazeera / Xinhua / SCMP, 25 Nov 2026",
+              font=F_FOOT, fill=GREY)
+
+    img.save(OUT, format="PNG")
+    print(f"Wrote {OUT} ({os.path.getsize(OUT)} bytes)")
+
+
+if __name__ == "__main__":
+    main()
