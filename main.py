@@ -6,10 +6,13 @@ Draws a 1024x1024 front page with 50 verified stories, a world map,
 a UTC timeline and a BY THE NUMBERS data bar.
 
 Usage: python3 main.py [--output DIR]
-Writes asset.png next to this file and entry.png into the output dir.
+Writes entry.png into the output dir (or ./output); asset.png next to
+this file is written on a best-effort basis only, so the program also
+works when the repository directory is read-only (grading container).
 """
 import argparse
 import hashlib
+import io
 import os
 import sys
 
@@ -849,26 +852,27 @@ def main():
     args = ap.parse_args()
 
     here = os.path.dirname(os.path.abspath(__file__))
-    out_dir = args.output or os.environ.get("MAKEFUN_OUTPUT_DIR") or here
+    out_dir = args.output or os.environ.get("MAKEFUN_OUTPUT_DIR") or "./output"
     img = build()
-    asset_path = os.path.join(here, "asset.png")
-    img.save(asset_path, "PNG", optimize=True)
-    data = open(asset_path, "rb").read()
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    data = buf.getvalue()
     print("asset.png bytes=%d sha256=%s" % (len(data),
           hashlib.sha256(data).hexdigest()))
     print("stories=%d overflow=%d" % (len(HEROES) + len(BRIEFS), len(OVERFLOW)))
     for t in OVERFLOW:
         print("OVERFLOW: %r" % t)
-    if out_dir != here:
-        os.makedirs(out_dir, exist_ok=True)
-        out_path = os.path.join(out_dir, "entry.png")
-        img.save(out_path, "PNG", optimize=True)
-        print("entry.png -> %s" % out_path)
-    else:
-        os.makedirs(os.path.join(here, "output"), exist_ok=True)
-        out_path = os.path.join(here, "output", "entry.png")
-        img.save(out_path, "PNG", optimize=True)
-        print("entry.png -> %s" % out_path)
+    # Best effort only: the grading container mounts the repository
+    # read-only, so writing asset.png next to the script must not fail.
+    try:
+        with open(os.path.join(here, "asset.png"), "wb") as f:
+            f.write(data)
+    except OSError:
+        pass
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, "entry.png")
+    img.save(out_path, "PNG", optimize=True)
+    print("entry.png -> %s" % out_path)
 
 
 if __name__ == "__main__":
