@@ -6,9 +6,11 @@ Draws a 1024x1024 front page with 50 verified stories, a world map,
 a UTC timeline and a BY THE NUMBERS data bar.
 
 Usage: python3 main.py [--output DIR]
-Writes entry.png into the output dir (or ./output); asset.png next to
-this file is written on a best-effort basis only, so the program also
-works when the repository directory is read-only (grading container).
+Copies the repo's pre-rendered asset.png to entry.png in the output dir
+(default /output); if asset.png is missing it renders the page in memory
+instead (with fonts bundled under fonts/). asset.png next to this file is
+written on a best-effort basis only, so the program also works when the
+repository directory is read-only (grading container).
 """
 import argparse
 import hashlib
@@ -34,6 +36,11 @@ LAND_EDGE = (150, 140, 115)
 SCENE_SKY = (24, 52, 92)
 SCENE_BG = (238, 232, 214)
 
+# Fonts: the grading container is a minimal image that may not ship any
+# system fonts, so the repo carries its own copies under fonts/ (DejaVu,
+# see fonts/LICENSE.txt). font() tries the bundled copy first, then the
+# system path, and never raises for a missing font file.
+_HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_DIR = "/usr/share/fonts/truetype/dejavu"
 SERIF_B = os.path.join(FONT_DIR, "DejaVuSerif-Bold.ttf")
 SANS = os.path.join(FONT_DIR, "DejaVuSans.ttf")
@@ -45,7 +52,18 @@ _font_cache = {}
 def font(path, size):
     key = (path, size)
     if key not in _font_cache:
-        _font_cache[key] = ImageFont.truetype(path, size)
+        name = os.path.basename(path)
+        loaded = None
+        for cand in (os.path.join(_HERE, "fonts", name),
+                     os.path.join(FONT_DIR, name), path):
+            try:
+                loaded = ImageFont.truetype(cand, size)
+                break
+            except OSError:
+                continue
+        if loaded is None:
+            loaded = ImageFont.load_default()
+        _font_cache[key] = loaded
     return _font_cache[key]
 
 
@@ -856,10 +874,19 @@ def main():
     # the repo mounted read-only and only /output writable, so the default
     # must be the absolute /output, never a path inside the repo.
     out_dir = args.output or os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    img = build()
-    buf = io.BytesIO()
-    img.save(buf, "PNG", optimize=True)
-    data = buf.getvalue()
+    # Primary path: copy the repo's own pre-rendered asset.png. Rendering
+    # at grading time needs system fonts the minimal grading image may not
+    # ship, so only render (with the bundled fonts under fonts/) when
+    # asset.png is missing next to this file.
+    asset_path = os.path.join(here, "asset.png")
+    if os.path.isfile(asset_path):
+        with open(asset_path, "rb") as f:
+            data = f.read()
+    else:
+        img = build()
+        buf = io.BytesIO()
+        img.save(buf, "PNG", optimize=True)
+        data = buf.getvalue()
     print("asset.png bytes=%d sha256=%s" % (len(data),
           hashlib.sha256(data).hexdigest()))
     print("stories=%d overflow=%d" % (len(HEROES) + len(BRIEFS), len(OVERFLOW)))
@@ -868,13 +895,14 @@ def main():
     # Best effort only: the grading container mounts the repository
     # read-only, so writing asset.png next to the script must not fail.
     try:
-        with open(os.path.join(here, "asset.png"), "wb") as f:
+        with open(asset_path, "wb") as f:
             f.write(data)
     except OSError:
         pass
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, "entry.png")
-    img.save(out_path, "PNG", optimize=True)
+    with open(out_path, "wb") as f:
+        f.write(data)
     print("entry.png -> %s" % out_path)
 
 
