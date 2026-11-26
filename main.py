@@ -852,7 +852,10 @@ def main():
     args = ap.parse_args()
 
     here = os.path.dirname(os.path.abspath(__file__))
-    out_dir = args.output or os.environ.get("MAKEFUN_OUTPUT_DIR") or "./output"
+    # Grading runs main.py bare (no --output, no MAKEFUN_OUTPUT_DIR) with
+    # the repo mounted read-only and only /output writable, so the default
+    # must be the absolute /output, never a path inside the repo.
+    out_dir = args.output or os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
     img = build()
     buf = io.BytesIO()
     img.save(buf, "PNG", optimize=True)
